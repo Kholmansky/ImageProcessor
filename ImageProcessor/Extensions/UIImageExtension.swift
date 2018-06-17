@@ -20,7 +20,7 @@ extension UIImage {
         drawRect.origin = drawOrigin
         var tf = CGAffineTransform.identity
         tf = tf.translatedBy(x: LARGEST_SIZE * 0.5, y: LARGEST_SIZE * 0.5)
-        tf = tf.rotated(by: CGFloat(1.5708))
+        tf = tf.rotated(by: 90 * .pi / 180)
         tf = tf.translatedBy(x: LARGEST_SIZE * -0.5, y: LARGEST_SIZE * -0.5)
         context.concatenate(tf)
         context.draw(cgImage, in: drawRect)

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
     
@@ -23,44 +24,29 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     private var history: [UIImage] = []
     
-    func showChoooseImageSource () {
+    @IBAction func showChoooseImageSource (_ sender: Any) {
         
         let alertController = UIAlertController(title: "Open image from...", message: nil, preferredStyle: .alert)
         
         alertController.addAction(UIAlertAction(title: "Camera", style: .default) {(action) in
-            self.chooseImageFromCamera()
+            self.chooseImage(from: .camera)
         })
         alertController.addAction(UIAlertAction(title: "Library", style: .default) {(action) in
-            self.chooseImageFromLibrary()
+            self.chooseImage(from: .photoLibrary)
         })
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         self.present(alertController, animated: true, completion: nil)
     }
 
-    func chooseImageFromLibrary() {
-        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+    func chooseImage(from source: UIImagePickerControllerSourceType) {
+        if UIImagePickerController.isSourceTypeAvailable(source) {
             let imagePicker = UIImagePickerController()
             imagePicker.delegate = self
-            imagePicker.sourceType = .photoLibrary;
+            imagePicker.sourceType = source;
             imagePicker.allowsEditing = false
             self.present(imagePicker, animated: true, completion: nil)
         }
-    }
-    
-    func chooseImageFromCamera() {
-        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            let imagePicker = UIImagePickerController()
-            imagePicker.delegate = self
-            imagePicker.sourceType = .camera;
-            imagePicker.allowsEditing = false
-            self.present(imagePicker, animated: true, completion: nil)
-        }
-    }
-    
-    @IBAction func chooseImageFrom(_ sender: Any) {
-        
-        showChoooseImageSource()
     }
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
