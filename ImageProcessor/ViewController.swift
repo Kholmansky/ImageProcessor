@@ -34,9 +34,32 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         alertController.addAction(UIAlertAction(title: "Library", style: .default) {(action) in
             self.chooseImage(from: .photoLibrary)
         })
+        alertController.addAction(UIAlertAction(title: "URL", style: .default) {(action) in
+            self.enterUrlAlert()
+        })
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func enterUrlAlert() {
+        
+        let alert = UIAlertController(title: "Enter image URL", message: nil, preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "image URL"
+        }
+        
+        let downloadAction = UIAlertAction(title: "Download", style: .default) { (action) in
+            if let text = alert.textFields?.first?.text {
+                if (text != ""){
+                    self.imagePicked.load(url: URL(string: text)!)
+                }
+            }
+        }
+        alert.addAction(downloadAction)
+        
+        self.present(alert, animated: true, completion: nil)
     }
 
     func chooseImage(from source: UIImagePickerControllerSourceType) {
@@ -61,17 +84,32 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func rotateImage(_ sender: Any) {
+    @IBAction func applyFilterTapped (_ sender: UIButton) {
         
-        if let beginImage = imagePicked.image {
+        switch sender.tag {
+        case 0:
+            rotateImage(image: imagePicked.image)
+        case 1:
+            invertColorsImage(image: imagePicked.image)
+        case 2:
+            mirrorImage(image: imagePicked.image)
+        default:
+            print("undefined filter")
+        }
+    }
+    
+    func rotateImage(image: UIImage?) {
+        
+        if let beginImage = image {
             let newImage = beginImage.rotate()
             history.insert(newImage, at: 0)
             tableView.reloadData()
         }
     }
     
-    @IBAction func invertColorsImage(_ sender: Any) {
-        if let beginImage = imagePicked.image {
+    func invertColorsImage(image: UIImage?) {
+        
+        if let beginImage = image {
             if let inputImage = CIImage(image: beginImage) {
                 if let filter = CIFilter(name: "CIPhotoEffectMono") {
                     filter.setValue(inputImage, forKey: kCIInputImageKey)
@@ -83,9 +121,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
-    @IBAction func mirrorImage(_ sender: Any) {
+    func mirrorImage(image: UIImage?) {
         
-        if let beginImage = imagePicked.image {
+        if let beginImage = image {
             let newImage = beginImage.withHorizontallyFlippedOrientation()
             history.insert(newImage, at: 0)
             tableView.reloadData()
