@@ -13,8 +13,8 @@ final class ImageProcessor {
 	static let shared = ImageProcessor()
 	
 	private init() {
-		
-	}
+	
+    }
 	
 	var history = [Image]()
 	
@@ -31,31 +31,29 @@ final class ImageProcessor {
 		}
 	}
 	
-	func rotateFilter(image: UIImage?) -> UIImage? {
-		if let beginImage = image {
-			return beginImage.rotate()
-		}
-		return nil
+	func rotateFilter(image: UIImage) -> UIImage? {
+        
+		let beginImage = image
+        return beginImage.rotate()
+    }
+	
+	func mirrorFilter(image: UIImage) -> UIImage? {
+        
+		let beginImage = image
+        return beginImage.withHorizontallyFlippedOrientation()
 	}
 	
-	func mirrorFilter(image: UIImage?) -> UIImage? {
-		if let beginImage = image {
-			return beginImage.withHorizontallyFlippedOrientation()
-		}
-		return nil
-	}
-	
-	func invertFilter(image: UIImage?) -> UIImage? {
-		if let beginImage = image {
-			if let inputImage = CIImage(image: beginImage) {
-				if let filter = CIFilter(name: "CIPhotoEffectMono") {
-					filter.setValue(inputImage, forKey: kCIInputImageKey)
-					let newImage = UIImage(ciImage: filter.outputImage!)
-					return newImage
-				}
-			}
-		}
-		return nil
+	func invertFilter(image: UIImage) -> UIImage? {
+        
+        let ciContext = CIContext(options: nil)
+        let coreImage = CIImage(image: image)
+        let filter = CIFilter(name: "CIPhotoEffectMono" )
+        filter!.setDefaults()
+        filter!.setValue(coreImage, forKey: kCIInputImageKey)
+        let filteredImageData = filter!.value(forKey: kCIOutputImageKey) as! CIImage
+        let filteredImageRef = ciContext.createCGImage(filteredImageData, from: filteredImageData.extent)
+        let resultImage = UIImage(cgImage: filteredImageRef!)
+        return resultImage
 	}
 	
 

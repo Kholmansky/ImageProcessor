@@ -15,7 +15,6 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
     @IBOutlet weak var imagePicked: UIImageView!
 	
 	let imgProc = ImageProcessor.shared
-	
 	var images = [Image]()
     
     override func viewDidLoad() {
@@ -44,6 +43,7 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
     }
     
     @IBAction func applyFilterTapped (_ sender: UIButton) {
+        
 		if let image = imagePicked.image {
 			if let newImage = imgProc.applyFilter(image: image, filter: sender.tag) {
 				saveImageToCoreData(image: newImage)
@@ -53,18 +53,23 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
     }
 	
 	func update () {
+        
 		let appDelegate = UIApplication.shared.delegate as! AppDelegate
 		let context = appDelegate.persistentContainer.viewContext
 		let fetchRequest = Image.fetchRequest() as NSFetchRequest<Image>
 		
-		let sortDescriptor = NSSortDescriptor(key: "imageId", ascending: true)
+		let sortDescriptor = NSSortDescriptor(key: "imageDate", ascending: false)
 		fetchRequest.sortDescriptors = [sortDescriptor]
 
 		do {
+            
 			images = try context.fetch(fetchRequest)
+            
 		} catch let error {
+            
 			print ("Failed to load data due error: \(error).")
 		}
+        
 		tableView.reloadData()
 	}
 	
@@ -87,7 +92,9 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
 	}
 	
 	func chooseImage(from source: UIImagePickerControllerSourceType) {
+        
 		if UIImagePickerController.isSourceTypeAvailable(source) {
+            
 			let imagePicker = UIImagePickerController()
 			imagePicker.delegate = self
 			imagePicker.sourceType = source;
@@ -106,32 +113,33 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
 		
 		let downloadAction = UIAlertAction(title: "Download", style: .default) { (action) in
 			if let text = alert.textFields?.first?.text {
+                
 				if (text != ""){
+                    
 					self.imagePicked.load(url: URL(string: text)!)
 				}
 			}
 		}
 		alert.addAction(downloadAction)
-		
 		self.present(alert, animated: true, completion: nil)
 	}
 	
 	func saveImageToCoreData (image: UIImage?) {
 		
-		//		var imageData: Data = UIImagePNGRepresentation(image)
-		//		var imageUIImage: UIImage = UIImage(data: imageData)
-		
 		let appDelegate = UIApplication.shared.delegate as! AppDelegate
 		let context = appDelegate.persistentContainer.viewContext
+        let date = Date()
 		
-		let newImageData: Data = UIImagePNGRepresentation(image)!
-		let newImage = Image(context: context)
-		newImage.imageData = newImageData
-		newImage.imageId = UUID().uuidString
-		
-		if let uniqueId = newImage.imageId {
-			print("imageId:\(uniqueId)")
-		}
+        if let newImageData: Data = UIImagePNGRepresentation(image!){
+            let newImage = Image(context: context)
+            newImage.imageData = newImageData
+            newImage.imageId = UUID().uuidString
+            newImage.imageDate = date
+            
+            if let uniqueId = newImage.imageId {
+                print("imageId:\(uniqueId)")
+            }
+        }
 		
 		do {
 			
