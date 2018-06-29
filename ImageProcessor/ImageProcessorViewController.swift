@@ -7,170 +7,151 @@
 //
 
 import UIKit
-import CoreData
 
-class ImageProcessorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
+class ImageProcessorViewController: UIViewController {
 
-    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var imagePicked: UIImageView!
-	
-	let imgProc = ImageProcessor.shared
-	var images = [Image]()
+    @IBOutlet weak var historyTableView: UITableView!
+    
+    var presenter: ImageProcessorPresenterProtocol!
+    var configurator: ImageProcessorConfiguratorProtocol = ImageProcessorConfigurator()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        imagePicked.backgroundColor = UIColor.lightGray
-        tableView.dataSource = self
-        tableView.delegate = self
-		update()
+        configurator.configure(with: self)
+        presenter.configureView()
     }
-	
-    @IBAction func showChoooseImageSource (_ sender: Any) {
-		getImage()
+    
+    @IBAction func getImageButtonClicked(_ sender: UIButton) {
+        presenter.getImageButtonClicked()
     }
+    
+    @IBAction func mirrorImageButtonClicked(_ sender: UIButton) {
+        presenter.mirrorImageButtonClicked()
+    }
+    
+    @IBAction func rotateImageButtonClicked(_ sender: UIButton) {
+        presenter.rotateImageButtonClicked()
+    }
+    
+    @IBAction func invertImageButtonclicked(_ sender: UIButton) {
+        presenter.invertImageButtonClicked()
+    }
+    
+}
 
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+extension ImageProcessorViewController: ImageProcessorViewProtocol {
+    func showChooseImageDataProvider() {
         
-        dismiss(animated: true, completion: nil)
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        let photoAction = UIAlertAction(title: "Photo", style: .default) { (action) in
+            self.presenter.selectImageDataProvider(at: .camera)
+        }
+        alertController.addAction(photoAction)
+        
+        let libraryAction = UIAlertAction(title: "Library", style: .default) { (action) in
+            self.presenter.selectImageDataProvider(at: .photoLibrary)
+        }
+        alertController.addAction(libraryAction)
+        
+        let loadAction = UIAlertAction(title: "Download image", style: .default) { (action) in
+            self.presenter.selectDownloadImage()
+        }
+        alertController.addAction(loadAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func update() {
+        
+    }
+    
+    func setInputImage(image: UIImage) {
+        
+    }
+    
+    func showImagePickerController(at type: UIImagePickerControllerSourceType) {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.sourceType = type
+        if type == .camera {
+            imagePickerController.cameraCaptureMode = .photo
+            imagePickerController.videoQuality = .typeHigh
+            imagePickerController.showsCameraControls = true
+        }
+        
+        self.present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    func showInputUrlAlert() {
+        
+    }
+    
+    func showWhatToDoWithResult(at index: Int) {
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        let saveAction = UIAlertAction(title: "Save", style: .default) { (action) in
+            self.presenter.tapSaveImageToGallery(at: index)
+        }
+        alertController.addAction(saveAction)
+        
+        let deleteAction = UIAlertAction(title: "Delete", style: .default) { (action) in
+            self.presenter.tapDeleteImage(at: index)
+        }
+        alertController.addAction(deleteAction)
+        
+        let reuseAction = UIAlertAction(title: "Reuse", style: .default) { (action) in
+            //self.presenter.tapReuseImage(at: index)
+        }
+        alertController.addAction(reuseAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func showError(at message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        
+        let okAction = UIAlertAction(title: "Ok", style: .default, handler: nil)
+        alert.addAction(okAction)
+        
+        self.present(alert, animated: true)
+    }
+}
+
+
+extension ImageProcessorViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        self.dismiss(animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        
-		let image = info[UIImagePickerControllerOriginalImage] as! UIImage
-		imagePicked.image = image
-		dismiss(animated: true, completion: nil)
-    }
-    
-    @IBAction func applyFilterTapped (_ sender: UIButton) {
-        
-		if let image = imagePicked.image {
-			if let newImage = imgProc.applyFilter(image: image, filter: sender.tag) {
-				saveImageToCoreData(image: newImage)
-				update()
-			}
-		}
-    }
-	
-	func update () {
-        
-		let appDelegate = UIApplication.shared.delegate as! AppDelegate
-		let context = appDelegate.persistentContainer.viewContext
-		let fetchRequest = Image.fetchRequest() as NSFetchRequest<Image>
-		
-		let sortDescriptor = NSSortDescriptor(key: "imageDate", ascending: false)
-		fetchRequest.sortDescriptors = [sortDescriptor]
-
-		do {
-            
-			images = try context.fetch(fetchRequest)
-            
-		} catch let error {
-            
-			print ("Failed to load data due error: \(error).")
-		}
-        
-		tableView.reloadData()
-	}
-	
-	func getImage() {
-		
-		let alertController = UIAlertController(title: "Open image from...", message: nil, preferredStyle: .alert)
-		
-		alertController.addAction(UIAlertAction(title: "Camera", style: .default) {(action) in
-			self.chooseImage(from: .camera)
-		})
-		alertController.addAction(UIAlertAction(title: "Library", style: .default) {(action) in
-			self.chooseImage(from: .photoLibrary)
-		})
-		alertController.addAction(UIAlertAction(title: "URL", style: .default) {(action) in
-			self.enterUrlAlert()
-		})
-		alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-		
-		self.present(alertController, animated: true, completion: nil)
-	}
-	
-	func chooseImage(from source: UIImagePickerControllerSourceType) {
-        
-		if UIImagePickerController.isSourceTypeAvailable(source) {
-            
-			let imagePicker = UIImagePickerController()
-			imagePicker.delegate = self
-			imagePicker.sourceType = source;
-			imagePicker.allowsEditing = false
-			self.present(imagePicker, animated: true, completion: nil)
-		}
-	}
-	
-	func enterUrlAlert() {
-		
-		let alert = UIAlertController(title: "Enter image URL", message: nil, preferredStyle: .alert)
-		
-		alert.addTextField { (textField) in
-			textField.placeholder = "image URL"
-		}
-		
-		let downloadAction = UIAlertAction(title: "Download", style: .default) { (action) in
-			if let text = alert.textFields?.first?.text {
-                
-				if (text != ""){
-                    
-					self.imagePicked.load(url: URL(string: text)!)
-				}
-			}
-		}
-		alert.addAction(downloadAction)
-		self.present(alert, animated: true, completion: nil)
-	}
-	
-	func saveImageToCoreData (image: UIImage?) {
-		
-		let appDelegate = UIApplication.shared.delegate as! AppDelegate
-		let context = appDelegate.persistentContainer.viewContext
-        let date = Date()
-		
-        if let newImageData: Data = UIImagePNGRepresentation(image!){
-            let newImage = Image(context: context)
-            newImage.imageData = newImageData
-            newImage.imageId = UUID().uuidString
-            newImage.imageDate = date
-            
-            if let uniqueId = newImage.imageId {
-                print("imageId:\(uniqueId)")
-            }
+        if let image = info["UIImagePickerControllerOriginalImage"] as? UIImage {
+            imagePicked.image = image
+        } else {
+            showError(at: "Ooooops...")
         }
-		
-		do {
-			
-			try context.save()
-			
-		} catch let error{
-			
-			print("Failed to save due the error: \(error)")
-		}
-		
-	}
-	
-	func saveImageToGallery(image: UIImage) {
-		
-		let imageData = UIImagePNGRepresentation(image)
-		let compresedImage = UIImage(data: imageData!)
-		UIImageWriteToSavedPhotosAlbum(compresedImage!, nil, nil, nil)
-		
-		let alert = UIAlertController(title: "Saved", message: "Your image has been saved", preferredStyle: .alert)
-		let okAction = UIAlertAction(title: "Ok", style: .default, handler: nil)
-		alert.addAction(okAction)
-		self.present(alert, animated: true, completion: nil)
-	}
-	
+        self.dismiss(animated: true, completion: nil)
+    }
+}
+
+
+
+extension ImageProcessorViewController: UITableViewDataSource, UITableViewDelegate {
+    
+  
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return images.count
+        return presenter.imageHistoryCount()
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -179,31 +160,18 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-       
-		if images.count > indexPath.row {
-			let image = images[indexPath.row]
-			
-			let appDelegate = UIApplication.shared.delegate as! AppDelegate
-			let context = appDelegate.persistentContainer.viewContext
-			context.delete(image)
-			images.remove(at: indexPath.row)
-			do {
-				try context.save()
-			}catch let error {
-				print("Failed to save due error: \(error).")
-			}
-			tableView.deleteRows(at: [indexPath], with: .fade)
-		}
-    }
+        
+        presenter.swipeToDeleteImage(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .fade)
+        }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		
-		let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-		
-		let image = images[indexPath.row]
-		let imageUIImage: UIImage = UIImage(data: image.imageData!)!
-		cell.imageView?.image = imageUIImage
-		return cell
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        
+        let imageUIImage = presenter.getImage(at: indexPath.row)
+        cell.imageView?.image = imageUIImage
+        return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -213,13 +181,25 @@ class ImageProcessorViewController: UIViewController, UIImagePickerControllerDel
             let alertController = UIAlertController(title: "Hint", message: "What do you want to do with this image?", preferredStyle: .alert)
             
             alertController.addAction(UIAlertAction(title: "Save to photo library", style: .default){(action) in
-                self.saveImageToGallery(image: (cell.imageView?.image)!)
+                //self.saveImageToGallery(image: (cell.imageView?.image)!)
             })
             alertController.addAction(UIAlertAction(title: "Reuse", style: .default){(acrion) in
-                self.imagePicked.image = cell.imageView?.image
+               // self.imagePicked.image = cell.imageView?.image
             })
-            self.present(alertController, animated: true, completion: nil)
+            //self.present(alertController, animated: true, completion: nil)
         }
     }
 }
+
+    
+
+
+
+
+
+
+
+
+
+
 
