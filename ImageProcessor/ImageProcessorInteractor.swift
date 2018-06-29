@@ -16,19 +16,6 @@ class ImageProcessorInteractor: ImageProcessorInteractorProtocol {
         self.presenter = presenter
     }
     
-    
-    func getImage() {
-        
-    }
-    
-    func loadImage() {
-        
-    }
-    
-    func chooseImage() {
-        
-    }
-    
     func applyRotateFilter(image: UIImage) -> UIImage? {
         let angle = CGFloat(Double.pi/2)
         let rotatedViewBox = UIView(frame: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
@@ -65,23 +52,8 @@ class ImageProcessorInteractor: ImageProcessorInteractorProtocol {
         return resultImage
     }
     
-    func saveImage() {
-        
+	func saveImage(_ image: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
     }
-    
-    func getImages() {
-        
-    }
-    
-    func insertImage() {
-        
-    }
-    
-    func deleteImage() {
-        
-    }
-    
-
-    
     
 }

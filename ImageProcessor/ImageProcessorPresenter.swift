@@ -10,29 +10,7 @@ import UIKit
 import CoreData
 
 class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
-    
-    func getAllImages() {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = Image.fetchRequest() as NSFetchRequest<Image>
-        
-        let sortDescriptor = NSSortDescriptor(key: "imageDate", ascending: false)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        
-        do {
-            imageHistory = try context.fetch(fetchRequest)
-        } catch let error {
-            print ("Failed to load data due error: \(error).")
-        }
-        
-    }
-    
-    func selectDownloadImage() {
-    }
-    
-    func tapReuseImage() {
-    }
-   
+
     weak var view: ImageProcessorViewProtocol!
     var interactor: ImageProcessorInteractorProtocol!
     var inputImage: UIImage?
@@ -41,6 +19,16 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
     required init (view: ImageProcessorViewProtocol) {
         self.view = view
     }
+	
+	func configureView() {
+		getAllImages()
+		view.update()
+	}
+	
+	func loadImage(image: UIImage) {
+		inputImage = image
+		view.setInputImage(image: inputImage!)
+	}
     
     func selectImageDataProvider(at type: UIImagePickerControllerSourceType) {
         view.showImagePickerController(at: type)
@@ -50,11 +38,11 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
         return imageHistory.count
     }
     
-    
     func rotateImageButtonClicked() {
         if let image = inputImage {
             let newImage = interactor.applyRotateFilter(image: image)
             saveImageToCoreData(image: newImage)
+			view.update()
         }
     }
     
@@ -62,6 +50,7 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
         if let image = inputImage {
             let newImage = interactor.applyMirrorFilter(image: image)
             saveImageToCoreData(image: newImage)
+			view.update()
         }
     }
     
@@ -69,8 +58,8 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
         if let image = inputImage {
             let newImage = interactor.applyInvertFilter(image: image)
             saveImageToCoreData(image: newImage)
+			view.update()
         }
-        
     }
     
     func selectFilteredImage(at index: Int) {
@@ -78,19 +67,20 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
     }
     
     func tapSaveImageToGallery(at index: Int) {
-        interactor.saveImage()
+		interactor.saveImage(getImage(at: index) )
     }
     
-    func tapReuseImage(at index: Int) {
-        
+    func tapUseImage(at index: Int) {
+        loadImage(image: getImage(at: index))
     }
     
     func tapDeleteImage(at index: Int) {
-        
+        swipeToDeleteImage(at: index)
     }
     
     func getImage(at index: Int) -> UIImage {
         let image = imageHistory[index]
+		print (UIImage(data: image.imageData!)!)
         return UIImage(data: image.imageData!)!
     }
     
@@ -112,14 +102,49 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
         }
     }
     
-    func configureView() {
-        
-    }
-    
     func getImageButtonClicked() {
-        view.showChooseImageDataProvider()
+        view.showChooseImageFrom()
     }
-    
+	
+	func downloadImage(from url_str: String) {
+		let url:URL = URL(string: url_str)!
+		let session = URLSession.shared
+		
+		let task = session.dataTask(with: url, completionHandler: {
+			(data, response, error) in
+			
+			if data != nil {
+				let image = UIImage(data: data!)
+				if(image != nil) {
+					DispatchQueue.main.async(execute: {
+						self.loadImage(image: image!)
+					})
+				}
+			}
+		})
+		task.resume()
+	}
+	
+	func getAllImages() {
+		let appDelegate = UIApplication.shared.delegate as! AppDelegate
+		let context = appDelegate.persistentContainer.viewContext
+		let fetchRequest = Image.fetchRequest() as NSFetchRequest<Image>
+		
+		let sortDescriptor = NSSortDescriptor(key: "imageDate", ascending: false)
+		fetchRequest.sortDescriptors = [sortDescriptor]
+		
+		do {
+			imageHistory = try context.fetch(fetchRequest)
+		} catch let error {
+			print ("Failed to load data due error: \(error).")
+		}
+		
+	}
+	
+	func selectDownloadImage() {
+		view.showInputUrlAlert()
+	}
+	
     func saveImageToCoreData (image: UIImage?) {
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -141,6 +166,5 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
         } catch let error{
             print("Failed to save due the error: \(error)")
         }
-        
     }
 }

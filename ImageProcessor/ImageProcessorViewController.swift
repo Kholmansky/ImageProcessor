@@ -18,8 +18,11 @@ class ImageProcessorViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+		
+		historyTableView.dataSource = self
+		historyTableView.delegate = self
         configurator.configure(with: self)
-        presenter.configureView()
+		presenter.configureView()
     }
     
     @IBAction func getImageButtonClicked(_ sender: UIButton) {
@@ -28,20 +31,35 @@ class ImageProcessorViewController: UIViewController {
     
     @IBAction func mirrorImageButtonClicked(_ sender: UIButton) {
         presenter.mirrorImageButtonClicked()
+		presenter.getAllImages()
+		historyTableView.reloadData()
     }
     
     @IBAction func rotateImageButtonClicked(_ sender: UIButton) {
         presenter.rotateImageButtonClicked()
+		presenter.getAllImages()
+		historyTableView.reloadData()
     }
     
     @IBAction func invertImageButtonclicked(_ sender: UIButton) {
         presenter.invertImageButtonClicked()
+		presenter.getAllImages()
+		historyTableView.reloadData()
     }
     
 }
 
 extension ImageProcessorViewController: ImageProcessorViewProtocol {
-    func showChooseImageDataProvider() {
+	
+	func setInputImage(image: UIImage) {
+		imagePicked.image = image
+	}
+	
+	func update() {
+		historyTableView.reloadData()
+	}
+	
+    func showChooseImageFrom() {
         
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         let photoAction = UIAlertAction(title: "Photo", style: .default) { (action) in
@@ -64,15 +82,7 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
         
         self.present(alertController, animated: true, completion: nil)
     }
-    
-    func update() {
-        
-    }
-    
-    func setInputImage(image: UIImage) {
-        
-    }
-    
+	
     func showImagePickerController(at type: UIImagePickerControllerSourceType) {
         let imagePickerController = UIImagePickerController()
         imagePickerController.delegate = self
@@ -87,7 +97,23 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
     }
     
     func showInputUrlAlert() {
-        
+		let alert = UIAlertController(title: "Enter image URL", message: nil, preferredStyle: .alert)
+	
+		alert.addTextField { (textField) in
+			textField.placeholder = "image URL"
+		}
+		
+		let okAction = UIAlertAction(title: "Ok", style: .default) { (action) in
+			if let text = alert.textFields?.first?.text {
+				self.presenter.downloadImage(from: text)
+			}
+		}
+		alert.addAction(okAction)
+		
+		let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+		alert.addAction(cancelAction)
+		
+		self.present(alert, animated: true, completion: nil)
     }
     
     func showWhatToDoWithResult(at index: Int) {
@@ -103,7 +129,7 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
         alertController.addAction(deleteAction)
         
         let reuseAction = UIAlertAction(title: "Reuse", style: .default) { (action) in
-            //self.presenter.tapReuseImage(at: index)
+			self.presenter.tapUseImage(at: index)
         }
         alertController.addAction(reuseAction)
         
@@ -113,7 +139,7 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
         self.present(alertController, animated: true, completion: nil)
     }
     
-    func showError(at message: String) {
+    func showErrorMessage(at message: String) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         
         let okAction = UIAlertAction(title: "Ok", style: .default, handler: nil)
@@ -123,7 +149,6 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
     }
 }
 
-
 extension ImageProcessorViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -132,66 +157,37 @@ extension ImageProcessorViewController: UIImagePickerControllerDelegate, UINavig
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let image = info["UIImagePickerControllerOriginalImage"] as? UIImage {
-            imagePicked.image = image
+            presenter.loadImage(image: image)
         } else {
-            showError(at: "Ooooops...")
+            showErrorMessage(at: "Error in getting image ")
         }
         self.dismiss(animated: true, completion: nil)
     }
 }
 
-
-
-extension ImageProcessorViewController: UITableViewDataSource, UITableViewDelegate {
-    
-  
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return presenter.imageHistoryCount()
-    }
-    
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        
-        return true
-    }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        
-        presenter.swipeToDeleteImage(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .fade)
-        }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        
-        let imageUIImage = presenter.getImage(at: indexPath.row)
-        cell.imageView?.image = imageUIImage
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        if let cell = tableView.cellForRow(at: indexPath) {
-            
-            let alertController = UIAlertController(title: "Hint", message: "What do you want to do with this image?", preferredStyle: .alert)
-            
-            alertController.addAction(UIAlertAction(title: "Save to photo library", style: .default){(action) in
-                //self.saveImageToGallery(image: (cell.imageView?.image)!)
-            })
-            alertController.addAction(UIAlertAction(title: "Reuse", style: .default){(acrion) in
-               // self.imagePicked.image = cell.imageView?.image
-            })
-            //self.present(alertController, animated: true, completion: nil)
-        }
-    }
+extension ImageProcessorViewController: UITableViewDataSource {
+	
+	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		return presenter.imageHistoryCount()
+	}
+	
+	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+		let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+		let image = presenter.getImage(at: indexPath.row)
+		cell.imageView?.image = image
+		return cell
+	}
 }
 
-    
+extension ImageProcessorViewController: UITableViewDelegate {
+	func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+		return 100
+	}
+	
+	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		presenter.selectFilteredImage(at: indexPath.row)
+	}
+}
 
 
 
