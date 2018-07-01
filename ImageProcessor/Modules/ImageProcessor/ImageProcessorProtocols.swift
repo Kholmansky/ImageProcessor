@@ -6,8 +6,8 @@
 //  Copyright © 2018 Maxim Kholmansky. All rights reserved.
 //
 
-import Foundation
 import UIKit
+import CoreData
 
 protocol ImageProcessorViewProtocol: class {
     func setInputImage(image: UIImage)
@@ -23,15 +23,11 @@ protocol ImageProcessorPresenterProtocol: class {
     func getImageButtonClicked()
     func selectImageDataProvider(at type: UIImagePickerControllerSourceType)
 	func loadImage(image: UIImage)
-    func rotateImageButtonClicked()
-    func mirrorImageButtonClicked()
-    func invertImageButtonClicked()
+    func applyFilterClicked(filter: String)
     func selectFilteredImage(at index: Int)
     func tapSaveImageToGallery(at index: Int)
 	func tapUseImage(at index: Int)
     func tapDeleteImage(at index: Int)
-    func swipeToDeleteImage(at index: Int)
-    func getAllImages()
     func getImage(at index: Int) -> UIImage
     func selectDownloadImage()
     func imageHistoryCount() -> Int
@@ -42,6 +38,9 @@ protocol ImageProcessorInteractorProtocol: class {
     func applyRotateFilter(image: UIImage) -> UIImage?
     func applyMirrorFilter(image: UIImage) -> UIImage?
     func applyInvertFilter(image: UIImage) -> UIImage?
+    func saveImageToHistory(_ image: UIImage?)
+    func getAllImages() -> [Image]
+    func removeImageFromHistory(_ image: NSManagedObject)
 	func saveImage(_ image: UIImage)
 }
 

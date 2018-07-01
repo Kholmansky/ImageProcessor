@@ -18,9 +18,11 @@ class ImageProcessorViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-		
+		imagePicked.backgroundColor = UIColor.gray
+        
 		historyTableView.dataSource = self
 		historyTableView.delegate = self
+        
         configurator.configure(with: self)
 		presenter.configureView()
     }
@@ -30,21 +32,15 @@ class ImageProcessorViewController: UIViewController {
     }
     
     @IBAction func mirrorImageButtonClicked(_ sender: UIButton) {
-        presenter.mirrorImageButtonClicked()
-		presenter.getAllImages()
-		historyTableView.reloadData()
+        presenter.applyFilterClicked(filter: "Mirror")
     }
     
     @IBAction func rotateImageButtonClicked(_ sender: UIButton) {
-        presenter.rotateImageButtonClicked()
-		presenter.getAllImages()
-		historyTableView.reloadData()
+        presenter.applyFilterClicked(filter: "Rotate")
     }
     
     @IBAction func invertImageButtonclicked(_ sender: UIButton) {
-        presenter.invertImageButtonClicked()
-		presenter.getAllImages()
-		historyTableView.reloadData()
+        presenter.applyFilterClicked(filter: "Invert")
     }
     
 }
@@ -58,6 +54,10 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
 	func update() {
 		historyTableView.reloadData()
 	}
+    
+    func deleteRows(at indexPath: IndexPath){
+        historyTableView.deleteRows(at: [indexPath], with: .fade)
+    }
 	
     func showChooseImageFrom() {
         
@@ -187,6 +187,15 @@ extension ImageProcessorViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		presenter.selectFilteredImage(at: indexPath.row)
 	}
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        presenter.tapDeleteImage(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .fade)
+    }
 }
 
 
