@@ -23,7 +23,7 @@ protocol ImageProcessorPresenterProtocol: class {
     func getImageButtonClicked()
     func selectImageDataProvider(at type: UIImagePickerControllerSourceType)
 	func loadImage(image: UIImage)
-    func applyFilterClicked(filter: String)
+    func applyFilterClicked(filter: TypeOfFilter) 
     func selectFilteredImage(at index: Int)
     func tapSaveImageToGallery(at index: Int)
 	func tapUseImage(at index: Int)
@@ -35,9 +35,7 @@ protocol ImageProcessorPresenterProtocol: class {
 }
 
 protocol ImageProcessorInteractorProtocol: class {
-    func applyRotateFilter(image: UIImage) -> UIImage?
-    func applyMirrorFilter(image: UIImage) -> UIImage?
-    func applyInvertFilter(image: UIImage) -> UIImage?
+    func applyFilter(filter: TypeOfFilter, for image: UIImage) -> UIImage?
     func saveImageToHistory(_ image: UIImage?)
     func getAllImages() -> [Image]
     func removeImageFromHistory(_ image: NSManagedObject)

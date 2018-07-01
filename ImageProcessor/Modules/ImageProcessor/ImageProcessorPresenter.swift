@@ -16,7 +16,6 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
     var inputImage: UIImage?
     
     var imageHistory = [Image] ()
-    var imagesInTableView = [DisplayedImage]()
     
     required init (view: ImageProcessorViewProtocol) {
         self.view = view
@@ -40,20 +39,10 @@ class ImageProcessorPresenter: ImageProcessorPresenterProtocol {
         return imageHistory.count
     }
     
-    func applyFilterClicked(filter: String) {
+    func applyFilterClicked(filter: TypeOfFilter) {
         if let image = inputImage {
             let newImage: UIImage?
-            
-            switch filter {
-            case "Rotate":
-                newImage = interactor.applyRotateFilter(image: image)
-            case "Mirror":
-                newImage = interactor.applyMirrorFilter(image: image)
-            case "Invert":
-                newImage = interactor.applyInvertFilter(image: image)
-            default:
-                return
-            }
+            newImage = interactor.applyFilter(filter: filter, for: image)
             interactor.saveImageToHistory(newImage)
             configureView()
         }

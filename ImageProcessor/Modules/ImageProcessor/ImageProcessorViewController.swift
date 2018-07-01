@@ -32,15 +32,15 @@ class ImageProcessorViewController: UIViewController {
     }
     
     @IBAction func mirrorImageButtonClicked(_ sender: UIButton) {
-        presenter.applyFilterClicked(filter: "Mirror")
+        presenter.applyFilterClicked(filter: .mirror)
     }
     
     @IBAction func rotateImageButtonClicked(_ sender: UIButton) {
-        presenter.applyFilterClicked(filter: "Rotate")
+        presenter.applyFilterClicked(filter: .rotate)
     }
     
     @IBAction func invertImageButtonclicked(_ sender: UIButton) {
-        presenter.applyFilterClicked(filter: "Invert")
+        presenter.applyFilterClicked(filter: .invert)
     }
     
 }

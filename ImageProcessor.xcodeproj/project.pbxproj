@@ -14,6 +14,7 @@
 		0E9C2AE320D4ED41005A56B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0E9C2AE220D4ED41005A56B1 /* Assets.xcassets */; };
 		0E9C2AE620D4ED41005A56B1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0E9C2AE420D4ED41005A56B1 /* LaunchScreen.storyboard */; };
 		0EBB103320E887BD00D86F6B /* DisplayedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBB103220E887BD00D86F6B /* DisplayedImage.swift */; };
+		0EC7E6A020E8AD4F0048452E /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC7E69F20E8AD4F0048452E /* Filter.swift */; };
 		0ECEB95320E50EAA0072F8AF /* ImageProcessorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ECEB95220E50EAA0072F8AF /* ImageProcessorPresenter.swift */; };
 		0ECEB95520E51C520072F8AF /* ImageProcessorConfigurator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ECEB95420E51C520072F8AF /* ImageProcessorConfigurator.swift */; };
 		0ECEB95720E51C920072F8AF /* ImageProcessorProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ECEB95620E51C920072F8AF /* ImageProcessorProtocols.swift */; };
@@ -30,6 +31,7 @@
 		0E9C2AE520D4ED41005A56B1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0E9C2AE720D4ED41005A56B1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0EBB103220E887BD00D86F6B /* DisplayedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayedImage.swift; sourceTree = "<group>"; };
+		0EC7E69F20E8AD4F0048452E /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
 		0ECEB95220E50EAA0072F8AF /* ImageProcessorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessorPresenter.swift; sourceTree = "<group>"; };
 		0ECEB95420E51C520072F8AF /* ImageProcessorConfigurator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessorConfigurator.swift; sourceTree = "<group>"; };
 		0ECEB95620E51C920072F8AF /* ImageProcessorProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessorProtocols.swift; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 			children = (
 				0EBB102A20E760DA00D86F6B /* Modules */,
 				0E9C2AD820D4ED40005A56B1 /* AppDelegate.swift */,
+				0EC7E69F20E8AD4F0048452E /* Filter.swift */,
 				0EBB103220E887BD00D86F6B /* DisplayedImage.swift */,
 				0E9C2ADC20D4ED40005A56B1 /* Main.storyboard */,
 				0E9C2AE220D4ED41005A56B1 /* Assets.xcassets */,
@@ -177,6 +180,7 @@
 				0E9C2AE120D4ED40005A56B1 /* ImageProcessor.xcdatamodeld in Sources */,
 				44BF954920D8BE77007384BB /* ImageProcessorInteractor.swift in Sources */,
 				0E9C2AD920D4ED40005A56B1 /* AppDelegate.swift in Sources */,
+				0EC7E6A020E8AD4F0048452E /* Filter.swift in Sources */,
 				0ECEB95320E50EAA0072F8AF /* ImageProcessorPresenter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
