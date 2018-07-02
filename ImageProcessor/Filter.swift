@@ -9,8 +9,7 @@
 import UIKit
 
 protocol Filter {
-    
-    var name: String {get}
+
     func apply(for image: UIImage) -> UIImage?
 }
 
@@ -18,23 +17,9 @@ enum TypeOfFilter: Filter {
     
     case rotate, mirror, invert
     
-    var name: String {
-        
-        switch self {
-            
-        case .invert:
-            return "Invert"
-        case .rotate:
-            return "Rotate"
-        case .mirror:
-            return "Mirror"
-        }
-    }
-    
     func apply(for image: UIImage) -> UIImage? {
         
         switch self {
-            
         case .invert:
             return InvertFilter().apply(for:image)
         case .rotate:
@@ -46,8 +31,6 @@ enum TypeOfFilter: Filter {
 }
 
 class RotateFilter: Filter {
-    
-    var name = "Rotate"
     
     func apply(for image: UIImage) -> UIImage? {
         
@@ -73,8 +56,6 @@ class RotateFilter: Filter {
 
 class MirrorFilter: Filter {
     
-    var name = "Mirror"
-    
     func apply(for image: UIImage) -> UIImage? {
         
         UIGraphicsBeginImageContext(image.size)
@@ -90,8 +71,6 @@ class MirrorFilter: Filter {
 
 class InvertFilter: Filter {
     
-    var name = "Invert"
-    
     func apply(for image: UIImage) -> UIImage? {
         
         let ciContext = CIContext(options: nil)
@@ -104,5 +83,4 @@ class InvertFilter: Filter {
         let resultImage = UIImage(cgImage: filteredImageRef!)
         return resultImage
     }
-    
 }
