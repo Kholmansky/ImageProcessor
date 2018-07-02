@@ -125,6 +125,7 @@ extension ImageProcessorViewController: ImageProcessorViewProtocol {
         
         let deleteAction = UIAlertAction(title: "Delete", style: .default) { (action) in
             self.presenter.tapDeleteImage(at: index)
+            self.update()
         }
         alertController.addAction(deleteAction)
         
